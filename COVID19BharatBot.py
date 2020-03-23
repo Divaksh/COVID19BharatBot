@@ -138,7 +138,12 @@ def stats(update, context):
 
 # latest statewise total data
 def get_stats_statewise():
-    return "Under development"
+    state_data = ""
+    for state1 in latest_stats_json['data']['statewise']:
+        state_data += str(state1['state']) + " | " + str(state1['confirmed']) + " | " + str(
+            state1['recovered']) + " | " + \
+                      str(state1['deaths']) + " | " + str(state1['active']) + "\n"
+    return state_data
 
 
 # helpline data
