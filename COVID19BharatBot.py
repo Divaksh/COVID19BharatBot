@@ -8,7 +8,9 @@ import logging
 # importing modules
 import json
 import requests
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import telegram
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -25,10 +27,63 @@ def read_token():
     return data['token']
 
 
-# Welcome message
+############################### Bot Control ####################################
+
 def start(update, context):
-    """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi, I\'m COVID19 Bharat Bot.\nPlease send\n1. /stats - for statistics')
+    update.message.reply_text(main_menu_message(), reply_markup=main_menu_keyboard())
+
+
+def statistics_menu(update, context):
+    query = update.callback_query
+    query.edit_message_text(text=get_stats(), parse_mode=telegram.ParseMode.MARKDOWN,
+                            reply_markup=statistics_keyboard())
+
+
+def statewise_menu(update, context):
+    query = update.callback_query
+    query.edit_message_text(text=get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN,
+                            reply_markup=statewise_keyboard())
+
+
+def helplines_menu(update, context):
+    query = update.callback_query
+    query.edit_message_text(text=get_helpline_data(), parse_mode=telegram.ParseMode.MARKDOWN,
+                            reply_markup=helplines_keyboard())
+
+
+############################ Keyboards #################################
+def main_menu_keyboard():
+    keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
+                [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
+                [InlineKeyboardButton('Helplines', callback_data='helplines')]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def statistics_keyboard():
+    keyboard = [[InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
+                [InlineKeyboardButton('Helplines', callback_data='helplines')],
+                [InlineKeyboardButton('Refresh', callback_data='statistics')]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def statewise_keyboard():
+    keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
+                [InlineKeyboardButton('Helplines', callback_data='helplines')],
+                [InlineKeyboardButton('Refresh', callback_data='statewise')]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def helplines_keyboard():
+    keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
+                [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+############################# Messages #################################
+
+def main_menu_message():
+    return 'Hello, I\'m COVID19 Bharat Bot, I\'ll provide you COVID19 data from trusted sources. Let me ' \
+           'know what do you want to know '
 
 
 # Help details
@@ -39,15 +94,21 @@ def help(update, context):
 
 ###############################################################################
 #                                                                             #
-#                            Feeds for the data                               #
+#                            Official feeds for the data                      #
 #                                                                             #
-# Official data Stats https://api.rootnet.in/covid19-in/stats/latest
-# Stats as a daily series: https://api.rootnet.in/covid19-in/stats/daily
-# Hospitals & bed stats: https://api.rootnet.in/covid19-in/stats/hospitals
-# Contact & helpline: https://api.rootnet.in/covid19-in/contacts
-# Notifications & advisories: https://api.rootnet.in/covid19-in/notifications
+# Official data Stats: https://api.rootnet.in/covid19-in/stats/latest          #
+# Stats as a daily series: https://api.rootnet.in/covid19-in/stats/daily      #
+# Hospitals & bed stats: https://api.rootnet.in/covid19-in/stats/hospitals    #
+# Contact & helpline: https://api.rootnet.in/covid19-in/contacts              #
+# Notifications & advisories: https://api.rootnet.in/covid19-in/notifications #
+#                                                                             #
+#                            Unofficial feeds for the data                    #
+#                                                                             #
+# Patient data: https://api.rootnet.in/covid19-in/unofficial/covid19india.org
+# State-wise data: https://api.rootnet.in/covid19-in/unofficial/covid19india.org/statewise
+# State-wise history(from 14th March): https://api.rootnet.in/covid19-in/unofficial/covid19india.org/statewise/history
 
-latest_stats = "https://api.rootnet.in/covid19-in/stats/latest"
+latest_stats = "https://api.rootnet.in/covid19-in/unofficial/covid19india.org/statewise"
 daily_stats = "https://api.rootnet.in/covid19-in/stats/daily"
 hospitals_stats = "https://api.rootnet.in/covid19-in/stats/hospitals"
 helpline = "https://api.rootnet.in/covid19-in/contacts"
@@ -56,34 +117,45 @@ notifications = "https://api.rootnet.in/covid19-in/notifications"
 # Opening latest_stats JSON file
 latest_stats_json = requests.get(latest_stats).json()
 # print(json_file.json())
-total = latest_stats_json['data']['summary']['total']
-confirmed_cases_indian = latest_stats_json['data']['summary']['confirmedCasesIndian']
-confirmed_cases_foreign = latest_stats_json['data']['summary']['confirmedCasesForeign']
-confirmed_cases_unknown = latest_stats_json['data']['summary']['confirmedButLocationUnidentified']
-discharged = latest_stats_json['data']['summary']['discharged']
-deaths = latest_stats_json['data']['summary']['deaths']
+confirmed = latest_stats_json['data']['total']['confirmed']
+deaths = latest_stats_json['data']['total']['deaths']
+recovered = latest_stats_json['data']['total']['recovered']
+active = latest_stats_json['data']['total']['active']
 
-# latest_data
-stats_data = "Total - " + str(total) + "\nIndians - " + str(confirmed_cases_indian) + "\nForeign - " + str(
-    confirmed_cases_foreign) + "\nUnidentified - " + str(confirmed_cases_unknown) + "\nCured - " + str(
-    discharged) + "\nDeaths - " + str(deaths)
+
+# latest total data
+def get_stats():
+    return "*Coronavirus pandemic in India* \n\n" + "Confirmed - " + str(
+        confirmed) + "\nDeaths - " + str(deaths) + "\nRecovered - " + str(
+        recovered) + "\nActive - " + str(active)
+
 
 # Send statistics
 def stats(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(stats_data)
+    update.message.reply_text(get_stats(), parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+# latest statewise total data
+def get_stats_statewise():
+    return "Under development"
+
+
+# helpline data
+def get_helpline_data():
+    return "Under development"
 
 
 # Send description
 def description(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(total)
+    update.message.reply_text()
 
 
 # Send news
 def news(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(total)
+    update.message.reply_text()
 
 
 def echo(update, context):
@@ -96,6 +168,7 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
+############################# Handlers ###############################
 def main():
     """Start the bot."""
     updater = Updater(read_token(), use_context=True)
@@ -108,7 +181,11 @@ def main():
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("stats", stats))
     dp.add_handler(CommandHandler("description", description))
-    dp.add_handler(CommandHandler("NEWS", news))
+    dp.add_handler(CommandHandler("news", news))
+    # Buttons
+    dp.add_handler(CallbackQueryHandler(helplines_menu, pattern='^helplines$'))
+    dp.add_handler(CallbackQueryHandler(statistics_menu, pattern='^statistics$'))
+    dp.add_handler(CallbackQueryHandler(statewise_menu, pattern='^statewise$'))
 
     # on noncommand i.e message - echo the message on Telegram
     dp.add_handler(MessageHandler(Filters.text, echo))
