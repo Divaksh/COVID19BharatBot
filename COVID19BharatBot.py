@@ -75,7 +75,8 @@ def statewise_keyboard():
 
 def helplines_keyboard():
     keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
-                [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')]]
+                [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
+                [InlineKeyboardButton('Refresh', callback_data='helplines')]]
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -116,6 +117,9 @@ notifications = "https://api.rootnet.in/covid19-in/notifications"
 
 # Opening latest_stats JSON file
 latest_stats_json = requests.get(latest_stats).json()
+
+#Opening helpline JSON file
+helpline_json = requests.get(helpline).json()
 # print(json_file.json())
 confirmed = latest_stats_json['data']['total']['confirmed']
 deaths = latest_stats_json['data']['total']['deaths']
@@ -148,7 +152,12 @@ def get_stats_statewise():
 
 # helpline data
 def get_helpline_data():
-    return "Under development"
+    helpline_data = ""
+    print(helpline_json["data"]["contacts"])
+    for state in helpline_json["data"]["contacts"]["regional"]:
+        print(str(state["loc"]))
+        helpline_data += str(state["loc"]) + ": " + str(state["number"]) + "\n"
+    return helpline_data
 
 
 # Send description
