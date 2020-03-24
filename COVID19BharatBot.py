@@ -80,19 +80,6 @@ def helplines_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
-############################# Messages #################################
-
-def main_menu_message():
-    return 'Hello, I\'m COVID19 Bharat Bot, I\'ll provide you COVID19 data from trusted sources. Let me ' \
-           'know what do you want to know '
-
-
-# Help details
-def help(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
-
-
 ###############################################################################
 #                                                                             #
 #                            Official feeds for the data                      #
@@ -118,7 +105,7 @@ notifications = "https://api.rootnet.in/covid19-in/notifications"
 # Opening latest_stats JSON file
 latest_stats_json = requests.get(latest_stats).json()
 
-#Opening helpline JSON file
+# Opening helpline JSON file
 helpline_json = requests.get(helpline).json()
 # print(json_file.json())
 confirmed = latest_stats_json['data']['total']['confirmed']
@@ -142,39 +129,94 @@ def stats(update, context):
 
 # latest statewise total data
 def get_stats_statewise():
-    state_data = ""
-    for state1 in latest_stats_json['data']['statewise']:
-        state_data += str(state1['state']) + " | " + str(state1['confirmed']) + " | " + str(
-            state1['recovered']) + " | " + \
-                      str(state1['deaths']) + " | " + str(state1['active']) + "\n"
+    state_data = "*State-Wise Cases:*\n\nState / UT | Confirmed | Recovered | Deaths | Active\n"
+    for single_state in latest_stats_json['data']['statewise']:
+        state_data += "*" + str(single_state['state']) + "* | " + str(single_state['confirmed']) + " | " + str(
+            single_state['recovered']) + " | " + \
+                      str(single_state['deaths']) + " | " + str(single_state['active']) + "\n"
     return state_data
 
 
 # helpline data
 def get_helpline_data():
     helpline_data = ""
-    print(helpline_json["data"]["contacts"])
+    # print(helpline_json["data"]["contacts"])
     for state in helpline_json["data"]["contacts"]["regional"]:
-        print(str(state["loc"]))
+        # print(str(state["loc"]))
         helpline_data += str(state["loc"]) + ": " + str(state["number"]) + "\n"
     return helpline_data
+
+
+############################# Messages #################################
+
+def main_menu_message():
+    return 'Hello, I\'m COVID19 Bharat Bot, I\'ll provide you COVID19 Bharat updates based on state press bulletins ' \
+           'and reliable news channels. Let me ' \
+           'know what do you want to know\n/about - Description\n/stats -  Statistics India\n/statewise - Statistics ' \
+           'state-wise India\n/helpline - COVID helpline numbers\n/faq - Frequently Asked Questions\n/guidelines - to ' \
+           'win war against COVID-19'
+
+
+def faq_message():
+    return "Q.Why does I have more postive count than MoH?\nA.MoH updates the data at a scheduled time and I provide " \
+           "you update from COVID19India.org which takes data from state press bulletin and reliable news " \
+           "channels.\n\nQ. Why people putting in time and resources to create me while not gaining a single penny " \
+           "from " \
+           "me?\nA. Because it affects all of us. Today it's someone else who is getting infected. Tomorrow it will " \
+           "be us. We need to prevent the spread. We need to document the data so that people with knowledge are able " \
+           "to map the data.\n\nQ. How is the data gathered for this project?\nA. I collect the data from " \
+           "COVID19India.org which takes it from each state press release, official government links and reputable " \
+           "news channels as source. Data is validated by group of volunteers and pushed into Google sheets at the " \
+           "moment. Google sheet is also available for public."
+
+
+def guidelines_message():
+    return "*Help the nation,\nHelp stop coronavirus.*\n\n*DO THE FIVE*\n1. *HANDS* Wash them often\n2. *ELBOW* Cough " \
+           "into it\n3. *FACE* Don't touch it\n4. *SPACE* Keep safe distance\n5. *HOME* Stay if you can\n\n*DO NOT DO " \
+           "THE FIVE*\n1. *EYES* Do " \
+           "not touch it\n2. *NOSE* Do not touch it\n3. *MOUTH* Do not touch it\n4. *HOME* Do not leave it\n5. " \
+           "*RUMORS* Do not spread it"
+
+
+def help_message():
+    return "This is what all you can ask me to share\n/about - Description\n/stats -  Statistics India\n/statewise - " \
+           "Statistics state-wise India\n/helpline - COVID helpline numbers\n/faq - Frequently Asked " \
+           "Questions\n/guidelines - to win war against COVID-19'"
+
+
+############################# Responders ###############################
+
+# Send description
+def helpline(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text(get_helpline_data(), parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 # Send description
 def description(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text()
+    update.message.reply_text(main_menu_message(), parse_mode=telegram.ParseMode.MARKDOWN)
 
 
-# Send news
-def news(update, context):
+def guidelines(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text()
+    update.message.reply_text(guidelines_message(), parse_mode=telegram.ParseMode.MARKDOWN)
 
 
-def echo(update, context):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+def statewise(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+def faq(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text(faq_message(), parse_mode=telegram.ParseMode.MARKDOWN)
+
+
+# Help details
+def help(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text(help_message(), parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 def error(update, context):
@@ -193,16 +235,19 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("guidelines", guidelines))
+    dp.add_handler(CommandHandler("helpline", helpline))
     dp.add_handler(CommandHandler("stats", stats))
-    dp.add_handler(CommandHandler("description", description))
-    dp.add_handler(CommandHandler("news", news))
+    dp.add_handler(CommandHandler("statewise", statewise))
+    dp.add_handler(CommandHandler("about", description))
+    dp.add_handler(CommandHandler("faq", faq))
     # Buttons
     dp.add_handler(CallbackQueryHandler(helplines_menu, pattern='^helplines$'))
     dp.add_handler(CallbackQueryHandler(statistics_menu, pattern='^statistics$'))
     dp.add_handler(CallbackQueryHandler(statewise_menu, pattern='^statewise$'))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    # dp.add_handler(MessageHandler(Filters.text, echo))
 
     # log all errors
     dp.add_error_handler(error)
