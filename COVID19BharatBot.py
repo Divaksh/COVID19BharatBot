@@ -112,27 +112,32 @@ hospitals_stats = "https://api.rootnet.in/covid19-in/stats/hospitals"
 helpline = "https://api.rootnet.in/covid19-in/contacts"
 notifications = "https://api.rootnet.in/covid19-in/notifications"
 
-# Opening latest_stats JSON file
-latest_stats_json = requests.get(latest_stats).json()
+
+def get_new_stats():
+    # Opening latest_stats JSON file
+    return requests.get(latest_stats).json()
+
 
 # Opening helpline JSON file
 helpline_json = requests.get(helpline).json()
+
+
 # print(json_file.json())
-confirmed = latest_stats_json['data']['total']['confirmed']
-deaths = latest_stats_json['data']['total']['deaths']
-recovered = latest_stats_json['data']['total']['recovered']
-active = latest_stats_json['data']['total']['active']
 
 
 # latest total data
 def get_stats():
+    latest_stats_json = get_new_stats()
     return "*COVID19 in India* \n\n" + "Confirmed - " + str(
-        confirmed) + "\nDeaths - " + str(deaths) + "\nRecovered - " + str(
-        recovered) + "\nActive - " + str(active)
+        latest_stats_json['data']['total']['confirmed']) + "\nDeaths - " + str(
+        latest_stats_json['data']['total']['deaths']) + "\nRecovered - " + str(
+        latest_stats_json['data']['total']['recovered']) + "\nActive - " + str(
+        latest_stats_json['data']['total']['active'])
 
 
 # latest statewise total data
 def get_stats_statewise():
+    latest_stats_json = get_new_stats()
     state_data = "*State-Wise Cases:*\n\nState / UT | Confirmed | Recovered | Deaths | Active\n"
     for single_state in latest_stats_json['data']['statewise']:
         state_data += "*" + str(single_state['state']) + "* | " + str(single_state['confirmed']) + " | " + str(
@@ -156,19 +161,19 @@ def get_helpline_data():
 def main_menu_message():
     return 'Hello, I\'m COVID19 Bharat Bot, I\'ll provide you COVID19 Bharat updates based on state press bulletins ' \
            'and reliable news channels. Let me ' \
-           'know what do you want to know\n/about - Description\n/stats -  Statistics India\n/statewise - Statistics ' \
+           'know what do you want to know\n/stats -  Statistics India\n/statewise - Statistics ' \
            'state-wise India\n/helpline - COVID helpline numbers\n/faq - Frequently Asked Questions\n/guidelines - to ' \
            'win war against COVID-19'
 
 
 def faq_message():
-    return "Q.Why does I have more postive count than MoH?\nA.MoH updates the data at a scheduled time and I provide " \
+    return "*Q.Why does I have more postive count than MoH?*\nA.MoH updates the data at a scheduled time and I provide " \
            "you update from COVID19India.org which takes data from state press bulletin and reliable news " \
-           "channels.\n\nQ. Why people putting in time and resources to create me while not gaining a single penny " \
+           "channels.\n\n*Q. Why people putting in time and resources to create me while not gaining a single penny " \
            "from " \
-           "me?\nA. Because it affects all of us. Today it's someone else who is getting infected. Tomorrow it will " \
+           "me?*\nA. Because it affects all of us. Today it's someone else who is getting infected. Tomorrow it will " \
            "be us. We need to prevent the spread. We need to document the data so that people with knowledge are able " \
-           "to map the data.\n\nQ. How is the data gathered for this project?\nA. I collect the data from " \
+           "to map the data.\n\n*Q. How is the data gathered for this project?*\nA. I collect the data from " \
            "COVID19India.org which takes it from each state press release, official government links and reputable " \
            "news channels as source. Data is validated by group of volunteers and pushed into Google sheets at the " \
            "moment. Google sheet is also available for public."
@@ -203,7 +208,8 @@ def stats(update, context):
 # Send description
 def helpline(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(get_helpline_data(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=helplines_keyboard())
+    update.message.reply_text(get_helpline_data(), parse_mode=telegram.ParseMode.MARKDOWN,
+                              reply_markup=helplines_keyboard())
 
 
 # Send description
@@ -214,12 +220,14 @@ def description(update, context):
 
 def guidelines(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(guidelines_message(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=guidelines_keyboard())
+    update.message.reply_text(guidelines_message(), parse_mode=telegram.ParseMode.MARKDOWN,
+                              reply_markup=guidelines_keyboard())
 
 
 def statewise(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=statewise_keyboard())
+    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN,
+                              reply_markup=statewise_keyboard())
 
 
 def faq(update, context):
@@ -260,7 +268,6 @@ def main():
     dp.add_handler(CallbackQueryHandler(statistics_menu, pattern='^statistics$'))
     dp.add_handler(CallbackQueryHandler(statewise_menu, pattern='^statewise$'))
     dp.add_handler(CallbackQueryHandler(guidelines_menu, pattern='^guidelines$'))
-
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
