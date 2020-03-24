@@ -132,17 +132,18 @@ def get_stats():
         latest_stats_json['data']['total']['confirmed']) + "\nDeaths - " + str(
         latest_stats_json['data']['total']['deaths']) + "\nRecovered - " + str(
         latest_stats_json['data']['total']['recovered']) + "\nActive - " + str(
-        latest_stats_json['data']['total']['active'])
+        latest_stats_json['data']['total']['active']) + "\n\n*Stay Home, Stay Safe, Save Lives.*"
 
 
 # latest statewise total data
 def get_stats_statewise():
     latest_stats_json = get_new_stats()
-    state_data = "*State-Wise Cases:*\n\nState / UT | Confirmed | Recovered | Deaths | Active\n"
+    state_data = "*State-Wise Cases:*\n\nState | Confirmed | Recovered | Deaths | Active\n"
     for single_state in latest_stats_json['data']['statewise']:
         state_data += "*" + str(single_state['state']) + "* | " + str(single_state['confirmed']) + " | " + str(
             single_state['recovered']) + " | " + \
                       str(single_state['deaths']) + " | " + str(single_state['active']) + "\n"
+    state_data += "\n\n*Stay Home, Stay Safe, Save Lives.*"
     return state_data
 
 
@@ -153,15 +154,17 @@ def get_helpline_data():
     for state in helpline_json["data"]["contacts"]["regional"]:
         # print(str(state["loc"]))
         helpline_data += str(state["loc"]) + ": " + str(state["number"]) + "\n"
+    helpline_data += "\n\n*Stay Home, Stay Safe, Save Lives.*"
     return helpline_data
 
 
 ############################# Messages #################################
 
 def main_menu_message():
-    return 'Hello, I\'m COVID19 Bharat Bot, I\'ll provide you COVID19 Bharat updates based on state press bulletins ' \
+    return 'Hello, I\'m COVID19 Bharat Bot, I\'m here to help you with COVID19 Bharat updates based on state press ' \
+           'bulletins ' \
            'and reliable news channels. Let me ' \
-           'know what do you want to know\n/stats -  Statistics India\n/statewise - Statistics ' \
+           'know how can I help you\n/stats -  Statistics India\n/statewise - Statistics ' \
            'state-wise India\n/helpline - COVID helpline numbers\n/faq - Frequently Asked Questions\n/guidelines - to ' \
            'win war against COVID-19'
 
@@ -184,7 +187,7 @@ def guidelines_message():
            "into it\n3. *FACE* Don't touch it\n4. *SPACE* Keep safe distance\n5. *HOME* Stay if you can\n\n*DO NOT DO " \
            "THE FIVE*\n1. *EYES* Do " \
            "not touch it\n2. *NOSE* Do not touch it\n3. *MOUTH* Do not touch it\n4. *HOME* Do not leave it\n5. " \
-           "*RUMORS* Do not spread it"
+           "*RUMORS* Do not spread it\n\n*Stay Home, Stay Safe, Save Lives.*"
 
 
 def help_message():
