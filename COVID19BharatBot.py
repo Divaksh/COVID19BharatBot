@@ -219,7 +219,7 @@ def guidelines(update, context):
 
 def statewise(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=statewise())
+    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=statewise_keyboard())
 
 
 def faq(update, context):
