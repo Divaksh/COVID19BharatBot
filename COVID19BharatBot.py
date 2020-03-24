@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
-Simple COVID19Bharat Bot to provide live statistics and Corona virus information from India.
+COVID19Bharat Bot to provide live statistics and Corona virus information from India.
 """
 import logging
 
