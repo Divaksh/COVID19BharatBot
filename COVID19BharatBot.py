@@ -29,10 +29,6 @@ def read_token():
 
 ############################### Bot Control ####################################
 
-def start(update, context):
-    update.message.reply_text(main_menu_message(), reply_markup=main_menu_keyboard())
-
-
 def statistics_menu(update, context):
     query = update.callback_query
     query.edit_message_text(text=get_stats(), parse_mode=telegram.ParseMode.MARKDOWN,
@@ -51,32 +47,46 @@ def helplines_menu(update, context):
                             reply_markup=helplines_keyboard())
 
 
+def guidelines_menu(update, context):
+    query = update.callback_query
+    query.edit_message_text(text=guidelines_message(), parse_mode=telegram.ParseMode.MARKDOWN,
+                            reply_markup=guidelines_keyboard())
+
+
 ############################ Keyboards #################################
 def main_menu_keyboard():
     keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
                 [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
-                [InlineKeyboardButton('Helplines', callback_data='helplines')]]
+                [InlineKeyboardButton('Helplines', callback_data='helplines')],
+                [InlineKeyboardButton('Guidelines', callback_data='guidelines')]]
     return InlineKeyboardMarkup(keyboard)
 
 
 def statistics_keyboard():
     keyboard = [[InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
                 [InlineKeyboardButton('Helplines', callback_data='helplines')],
-                [InlineKeyboardButton('Refresh', callback_data='statistics')]]
+                [InlineKeyboardButton('Guidelines', callback_data='guidelines')]]
     return InlineKeyboardMarkup(keyboard)
 
 
 def statewise_keyboard():
     keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
                 [InlineKeyboardButton('Helplines', callback_data='helplines')],
-                [InlineKeyboardButton('Refresh', callback_data='statewise')]]
+                [InlineKeyboardButton('Guidelines', callback_data='guidelines')]]
     return InlineKeyboardMarkup(keyboard)
 
 
 def helplines_keyboard():
     keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
                 [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
-                [InlineKeyboardButton('Refresh', callback_data='helplines')]]
+                [InlineKeyboardButton('Guidelines', callback_data='guidelines')]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+def guidelines_keyboard():
+    keyboard = [[InlineKeyboardButton('Statistics', callback_data='statistics')],
+                [InlineKeyboardButton('Statistics State-wise', callback_data='statewise')],
+                [InlineKeyboardButton('Helplines', callback_data='helplines')]]
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -116,15 +126,9 @@ active = latest_stats_json['data']['total']['active']
 
 # latest total data
 def get_stats():
-    return "*Coronavirus pandemic in India* \n\n" + "Confirmed - " + str(
+    return "*COVID19 in India* \n\n" + "Confirmed - " + str(
         confirmed) + "\nDeaths - " + str(deaths) + "\nRecovered - " + str(
         recovered) + "\nActive - " + str(active)
-
-
-# Send statistics
-def stats(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text(get_stats(), parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 # latest statewise total data
@@ -186,10 +190,20 @@ def help_message():
 
 ############################# Responders ###############################
 
+def start(update, context):
+    update.message.reply_text(main_menu_message(), reply_markup=main_menu_keyboard())
+
+
+# Send statistics
+def stats(update, context):
+    """Send a message when the command /help is issued."""
+    update.message.reply_text(get_stats(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=statistics_keyboard())
+
+
 # Send description
 def helpline(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(get_helpline_data(), parse_mode=telegram.ParseMode.MARKDOWN)
+    update.message.reply_text(get_helpline_data(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=helplines_keyboard())
 
 
 # Send description
@@ -200,17 +214,17 @@ def description(update, context):
 
 def guidelines(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(guidelines_message(), parse_mode=telegram.ParseMode.MARKDOWN)
+    update.message.reply_text(guidelines_message(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=guidelines_keyboard())
 
 
 def statewise(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN)
+    update.message.reply_text(get_stats_statewise(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=statewise())
 
 
 def faq(update, context):
     """Send a message when the command /help is issued."""
-    update.message.reply_text(faq_message(), parse_mode=telegram.ParseMode.MARKDOWN)
+    update.message.reply_text(faq_message(), parse_mode=telegram.ParseMode.MARKDOWN, reply_markup=main_menu_keyboard())
 
 
 # Help details
@@ -245,6 +259,8 @@ def main():
     dp.add_handler(CallbackQueryHandler(helplines_menu, pattern='^helplines$'))
     dp.add_handler(CallbackQueryHandler(statistics_menu, pattern='^statistics$'))
     dp.add_handler(CallbackQueryHandler(statewise_menu, pattern='^statewise$'))
+    dp.add_handler(CallbackQueryHandler(guidelines_menu, pattern='^guidelines$'))
+
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
